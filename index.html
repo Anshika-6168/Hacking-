@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mobile Full Access</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    #camera {
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body>
+<h1>Mobile Full Access Demo</h1>
+
+<div id="camera">
+    <h2>Camera Access</h2>
+    <video id="videoElement" autoplay></video>
+</div>
+
+<div id="file">
+    <h2>File Manager Access</h2>
+    <input type="file" id="fileInput">
+</div>
+
+<div id="location">
+    <h2>Location Access</h2>
+    <p id="locationOutput">Click the button to get location</p>
+    <button onclick="getLocation()">Get Location</button>
+</div>
+
+<script>
+    // Camera Access
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(function(stream) {
+                var video = document.getElementById('videoElement');
+                video.srcObject = stream;
+            })
+            .catch(function(err) {
+                console.error('Error accessing the camera: ', err);
+            });
+    } else {
+        console.error('getUserMedia is not supported by this browser');
+    }
+
+    // File Manager Access
+    document.getElementById('fileInput').addEventListener('change', function(event) {
+        var file = event.target.files[0];
+        console.log('Selected file:', file);
+    });
+
+    // Location Access
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var latitude = position.coords.latitude;
+                var longitude = position.coords.longitude;
+                document.getElementById('locationOutput').innerText = 'Latitude: ' + latitude + ', Longitude: ' + longitude;
+            });
+        } else {
+            console.error('Geolocation is not supported by this browser');
+        }
+    }
+</script>
+</body>
+</html>
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Show IP Address and Device Info</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 20px;
+    }
+    #infoContainer {
+        margin-bottom: 20px;
+    }
+</style>
+</head>
+<body>
+<h1>Show IP Address and Device Info</h1>
+
+<div id="infoContainer">
+    <button onclick="showInfo()">Show IP Address and Device Info</button>
+</div>
+
+<script>
+    function showInfo() {
+        var infoContainer = document.getElementById('infoContainer');
+
+        // Get IP address using WebRTC
+        var RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+        if (RTCPeerConnection) {
+            var pc = new RTCPeerConnection({ iceServers: [] });
+            pc.createDataChannel('');
+            pc.createOffer(pc.setLocalDescription.bind(pc), function(){});
+
+            pc.onicecandidate = function(event) {
+                if (event && event.candidate && event.candidate.candidate) {
+                    var ipAddress = event.candidate.candidate.split(' ')[4];
+                    var ipAddressElement = document.createElement('p');
+                    ipAddressElement.textContent = 'IP Address: ' + ipAddress;
+                    infoContainer.appendChild(ipAddressElement);
+                    pc.onicecandidate = null;
+                }
+            };
+        } else {
+            console.error('WebRTC not supported');
+        }
+
+        // Get device information
+        var userAgent = navigator.userAgent;
+        var deviceInfoElement = document.createElement('p');
+        deviceInfoElement.textContent = 'Device Info: ' + userAgent;
+        infoContainer.appendChild(deviceInfoElement);
+    }
+</script>
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireless Data Transfer</title>
+</head>
+<body>
+  <input type="file" id="fileInput">
+  <button onclick="uploadFile()">Upload</button>
+  <script>
+    function uploadFile() {
+      const fileInput = document.getElementById('fileInput');
+      const file = fileInput.files[0];
+      
+      if (file) {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        fetch('/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(response => {
+          if (response.ok) {
+            alert('File uploaded successfully!');
+          } else {
+            alert('File upload failed.');
+          }
+        })
+        .catch(error => {
+          alert('An error occurred while uploading the file.');
+        });
+      } else {
+        alert('Please select a file to upload.');
+      }
+    }
+  </script>
+</body>
+</html>
